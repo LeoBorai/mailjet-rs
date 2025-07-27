@@ -335,7 +335,7 @@ pub struct Message {
     /// the ID returned by the /template resource.
     #[serde(rename = "Mj-TemplateID")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub mj_template_id: Option<usize>,
+    pub mj_template_id: Option<u64>,
     /// Flag for Mailjet's `Message` to interpret the template language
     #[serde(rename = "Mj-TemplateLanguage")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -476,7 +476,7 @@ impl Message {
     ///
     /// This method is used when using a template language for your
     /// `Message`
-    pub fn set_template_id(&mut self, id: usize) {
+    pub fn set_template_id(&mut self, id: u64) {
         self.mj_template_id = Some(id);
         self.use_mj_template_language = Some(true);
     }

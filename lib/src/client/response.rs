@@ -10,7 +10,7 @@ pub struct Sent {
     #[serde(rename = "Email")]
     pub email: String,
     #[serde(rename = "MessageID")]
-    pub message_id: usize,
+    pub message_id: u64,
     #[serde(rename = "MessageUUID")]
     pub message_uuid: String,
 }

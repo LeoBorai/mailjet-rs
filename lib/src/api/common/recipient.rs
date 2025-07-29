@@ -70,13 +70,13 @@ mod tests {
     #[test]
     fn creates_recipient_from_comma_separated() {
         let have = "foo@bar.com,rust@rust-lang.org,hyper_rs.alpha@gmail.com";
-        let want = vec![
+        let want = [
             Recipient::new("foo@bar.com"),
             Recipient::new("rust@rust-lang.org"),
             Recipient::new("hyper_rs.alpha@gmail.com"),
         ];
 
-        for (index, recipient) in have.split(',').enumerate().into_iter() {
+        for (index, recipient) in have.split(',').enumerate() {
             assert_eq!(recipient.to_string(), want.get(index).unwrap().email);
         }
     }
@@ -87,7 +87,7 @@ mod tests {
             Recipient::with_name("rust@rust-lang.org", "The Rust Programming Language"),
             Recipient::new("foo@bar.com"),
         ];
-        let want = vec![
+        let want = [
             String::from("\"The Rust Programming Language\" <rust@rust-lang.org>"),
             String::from("<foo@bar.com>"),
         ];

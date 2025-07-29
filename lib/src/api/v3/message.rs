@@ -655,7 +655,7 @@ mod tests {
         message.attach(attachment);
 
         let message_attachment = message.attachments.unwrap();
-        let message_attachment = message_attachment.get(0).unwrap();
+        let message_attachment = message_attachment.first().unwrap();
 
         assert_eq!(message_attachment.content_type, "text/plain");
         assert_eq!(message_attachment.filename, "filename");
@@ -676,7 +676,7 @@ mod tests {
         message.attach_inline(attachment);
 
         let message_attachment = message.inline_attachments.unwrap();
-        let message_attachment = message_attachment.get(0).unwrap();
+        let message_attachment = message_attachment.first().unwrap();
 
         assert_eq!(message_attachment.content_type, "text/plain");
         assert_eq!(message_attachment.filename, "filename");
@@ -721,10 +721,10 @@ mod tests {
             None,
         );
 
-        assert_eq!(message.have_email_fields_filled(), false);
+        assert!(!message.have_email_fields_filled());
 
         message.set_receivers(vec![], None, None);
 
-        assert_eq!(message.have_email_fields_filled(), true);
+        assert!(message.have_email_fields_filled());
     }
 }

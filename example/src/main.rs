@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Do something with the response from Mailjet
     // Ok(Response { sent: [Sent { email: "your_receiver@company.com", message_id: 000, message_uuid: "message-uuid" }] })
-    println!("{:?}", response);
+    println!("{response:?}");
 
     Ok(())
 }

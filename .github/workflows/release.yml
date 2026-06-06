@@ -1,45 +1,85 @@
-name: release
+name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        required: true
+        description: 'Version number to bump'
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   publish-dry-run:
-    name: Dry run publish command
+    name: "Runs cargo publish --dry-run"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Dry Rung Cargo Publish
-        run: cd ./lib && cargo publish --dry-run
+      - name: publish crate
+        run: cargo publish --dry-run
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body: ''
-          draft: false
-          prerelease: false
+  release:
+    name: Create Release
+    needs: publish-dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-      - run: cargo login ${CRATES_IO_TOKEN}
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Cargo Binstall
+        uses: cargo-bins/cargo-binstall@main
+
+      - name: Install Rust Binaries
+        run: |
+          cargo binstall -y --force cargo-edit
+
+      - id: cargo-set-version
+        name: Set Version
+        run: cargo set-version --bump ${{ inputs.version }}
+
+      - name: Set Crate Version as Environment Variable
+        run: |
+          CARGO_TOML_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s", $2); exit }' Cargo.toml)
+          echo "CRATE_VERSION=$CARGO_TOML_VERSION" >> $GITHUB_ENV
+
+      - name: Create Commit
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "chore: bump version to v$CRATE_VERSION"
+          git push origin main --follow-tags
+
+      - name: Login to Crates.io
+        run: cargo login ${CRATES_IO_TOKEN}
         env:
           CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
 
-      - name: publish crate
-        run: cd ./lib && cargo publish
+      - name: Publish crate
+        run: cargo publish
+
+      - name: Create Release
+        id: create_release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.request(`POST /repos/${{ github.repository }}/releases`, {
+              tag_name: "v${{ env.CRATE_VERSION }}",
+              generate_release_notes: true
+            });

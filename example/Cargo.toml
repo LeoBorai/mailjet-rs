@@ -1,6 +1,6 @@
 [package]
 name = "example"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Esteban Borai <estebanborai@gmail.com>"]
 edition = "2018"
 publish = false
